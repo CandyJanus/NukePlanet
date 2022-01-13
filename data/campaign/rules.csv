@@ -1,1 +1,3 @@
 id,trigger,conditions,script,text,options,notes
+offerRemovePlanet,PopulateOptions,$market.isPlanetConditionMarketOnly,,,8:removePlanetOption:Destroy this world,
+removePlanet,DialogOptionSelected,$option == removePlanetOption,nukePlanet DismissDialogue,,,

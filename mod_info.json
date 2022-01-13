@@ -1,13 +1,13 @@
 {
-    "id": "yourName_uniqueid",
-    "name": "starsector-gradle-template",
-    "author": "Your Name",
+    "id": "nuke_planet",
+    "name": "Nuke Planet",
+    "author": "NuclearStudent",
     "utility": "false",
     "version": { "major":"1", "minor": "0", "patch": "0" },
-    "description": "Mod description.",
-    "gameVersion": "0.95.1a-RC6",
-    "jars":["jars/starsector-gradle-template.jar"],
-    "modPlugin":"com.example.ExampleModPlugin",
+    "description": "Allows you to obliterate planets.",
+    "gameVersion": "0.95a-RC15",
+    "jars":["jars/nuke_planet.jar"],
+    "modPlugin":"data.nukePlanetPlugin",
     "dependencies": [
         {
             "id": "lw_lazylib",
