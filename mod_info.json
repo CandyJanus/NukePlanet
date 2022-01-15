@@ -6,8 +6,7 @@
     "version": { "major":"1", "minor": "0", "patch": "0" },
     "description": "Allows you to obliterate planets.",
     "gameVersion": "0.95a-RC15",
-    "jars":["jars/nuke_planet.jar"],
-    "modPlugin":"data.nukePlanetPlugin",
+    "jars":["jars/NukePlanet.jar"],
     "dependencies": [
         {
             "id": "lw_lazylib",

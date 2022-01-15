@@ -1,3 +1,4 @@
 id,trigger,conditions,script,text,options,notes
-offerRemovePlanet,PopulateOptions,$market.isPlanetConditionMarketOnly,,,8:removePlanetOption:Destroy this world,
-removePlanet,DialogOptionSelected,$option == removePlanetOption,nukePlanet DismissDialogue,,,
+offerRemovePlanetUninhabited,PopulateOptions,$market.isPlanetConditionMarketOnly,,,8:removePlanetOption:Destroy this world,
+offerRemovePlanetInhabited,PopulateOptions,$hasMarket,,,8:removePlanetOption:Destroy this world,
+removePlanet,DialogOptionSelected,$option == removePlanetOption,nukePlanet_RULECMD DismissDialogue,,,
