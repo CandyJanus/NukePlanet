@@ -35,30 +35,32 @@ public class nukePlanet_RULECMD extends BaseCommandPlugin {
         //note: then we get the market
         MarketAPI market = planet.getMarket();
 
-
         //note: If there is no market, we'll ignore that and proceed straight to nuking.
-        if (market!=null) {
+        //if (market!=null) //note: actually that doesn't work, market is never null, even empty planets have markets.
+
             //note: I'm hoping that this takes care of all connected stations.
             //note: It does!
-            for (SectorEntityToken entity : market.getConnectedEntities()) {
-                system.removeEntity(entity);
-                //note: force deciv, should remove market for real
-                //note: full destroy, full destroy withIntel
-            }
-            DecivTracker decivtracker=DecivTracker.getInstance(); //note: wait, this is a static object I think? I shouldn't need to do this???
-            decivtracker.decivilize(market, true, true);
+        for (SectorEntityToken entity : market.getConnectedEntities()) {
+            system.removeEntity(entity);
+            //note: force deciv, should remove market for real
+            //note: full destroy, full destroy withIntel
         }
+        DecivTracker decivtracker=DecivTracker.getInstance(); //note: wait, this is a static object I think? I shouldn't need to do this???
+        decivtracker.decivilize(market, true, true);
+
 
         //note: todo: remove rings and coronas from planet
 
         //note: todo remove nascent gravity well
 
         //note: spawn debris around planet
+                //note: In retrospect I could have also used the magicCampaign function for exactly this.
 
         MiscellaneousThemeGenerator MiscGen = new MiscellaneousThemeGenerator(); //note: The generator doesn't *seem* to be static, though the methods are?
         BaseThemeGenerator.StarSystemData sysData = MiscGen.computeSystemData(system);
-
-        MiscGen.addDebrisField(sysData, planet, PLANET_DEBRIS_RADIUS); //note: todo could make debris radius dependent on the kind of target, currently it's a constant.
+            //note: todo could make debris radius dependent on the kind of target, currently it's a constant.
+            //note: todo make debris field rewards dependent on planet. eg. add some volatiles for a gas/cryo planet
+        //MiscGen.addDebrisField(sysData, planet, PLANET_DEBRIS_RADIUS);
 
         //note: todo spawn asteroid field around planet
 
@@ -67,9 +69,6 @@ public class nukePlanet_RULECMD extends BaseCommandPlugin {
         system.removeEntity(planet);
 
         //note: todo make the explosion effect that happens when a battle is won. I have no idea where to do this.
-
-
-
 
 
         //note: sanity check that planet is gone
