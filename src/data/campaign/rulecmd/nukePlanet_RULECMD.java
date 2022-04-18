@@ -74,20 +74,50 @@ public class nukePlanet_RULECMD extends BaseCommandPlugin {
 //        }
 
         //note: nerp I have to iterate through every fuckin' entity, doesn't seem to be a more performant way
-        LocationAPI location = planet.getContainingLocation();
-        List<SectorEntityToken>allEntities=Global.getSector().getHyperspace().getAllEntities();
-        for (SectorEntityToken entity:allEntities)
+
+//        List<SectorEntityToken>allEntities=Global.getSector().getHyperspace().getAllEntities();
+//        for (SectorEntityToken entity:allEntities)
+//        {
+//            log.info("Looking for nascent gravity wells to purge.");
+//            //note: isInCurrentLocation doesn't work because the well is in hyper, not realspace
+//            if(entity.getLocationInHyperspace() == planet.getLocationInHyperspace()&&entity instanceof NascentGravityWellAPI);
+//            {
+//                log.info("Purging nascent gravity well.");
+//                LocationAPI location = entity.getContainingLocation();
+//                log.info("nascent grav well's location is" + location.getLocation());
+//                location.removeEntity(entity);
+//                break;
+//            }
+//        }
+
+        //note: hartley suggested that doing the same loop but through terrain might help
+
+        List <CampaignTerrainAPI> terrainList=system.getTerrainCopy();
+        for (CampaignTerrainAPI terrain:terrainList)
         {
             log.info("Looking for nascent gravity wells to purge.");
             //note: isInCurrentLocation doesn't work because the well is in hyper, not realspace
-            if(entity.getLocationInHyperspace() == planet.getLocationInHyperspace()&&entity instanceof NascentGravityWellAPI);
+            if(terrain.getLocationInHyperspace() == planet.getLocationInHyperspace()&&terrain instanceof NascentGravityWellAPI);
             {
                 log.info("Purging nascent gravity well.");
-                //note: I'm pretty sure this is a realspace location. this gonna work?
-                location.removeEntity(entity);
+
+                //note: what if we just teleport this somewhere else and hope it don't matter
+
+                terrain.setLocation(-10000,-10000);
+                terrain.updateSpec();
+
+                //note: shrinking things small doesn't seem to work either
+//                final float tinyRadius =0.1f;
+//                terrain.setRadius(tinyRadius);
+
+//                LocationAPI location = terrain.getContainingLocation();
+//                log.info("nascent grav well's location is" + location.getLocation());
+                //note: this doesn't work for whatever reason
+                //location.removeEntity(terrain);
                 break;
             }
         }
+
 
         //note: I'm hoping that this takes care of all connected stations.
         //note: It does!
@@ -95,6 +125,7 @@ public class nukePlanet_RULECMD extends BaseCommandPlugin {
             system.removeEntity(entity);
             //note: force deciv, should remove market for real
             //note: full destroy, full destroy withIntel
+            //note: naw, that's unnecessary, force deciv is enough
         }
 
         //note: I guess this is the same as removing connected entities, probably it is the same in the underlying sense.
