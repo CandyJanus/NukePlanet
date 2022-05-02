@@ -52,7 +52,7 @@ public class nukePlanet_RULECMD extends BaseCommandPlugin {
         //note: todo: remove rings and coronas from planet
 
         FactionAPI neutral = Global.getSector().getFaction("neutral");
-        final float searchRange =5500f;
+        final float searchRange =5500f;//arbitrary number, in the future have this bigger but have a check to avoid removing the terrain from unrelated planets
         List<SectorEntityToken> terrainList=CampaignUtils.getNearbyEntitiesFromFaction(planet, searchRange, "terrain", neutral);
 
             //note: god i fucking hope terrain is neutral, and that people don't fuck with terrain faction identity
@@ -65,7 +65,7 @@ public class nukePlanet_RULECMD extends BaseCommandPlugin {
                 log.info("found a planet, star, or moon that shouldn't be deleted here");
             }
             else{
-                log.info("deleting some , hopefully");
+                log.info("deleting some rings or whatever, hopefully");
                 system.removeEntity(terrain);
             }
         }
@@ -105,13 +105,25 @@ public class nukePlanet_RULECMD extends BaseCommandPlugin {
                 log.info("Looking for nascent gravity wells to purge.");
                 //note: isInCurrentLocation doesn't work because the well is in hyper, not realspace
                 NascentGravityWellAPI nascwell= (NascentGravityWellAPI) entity; //note: the cast works, it just protests in game if you forget to do the instanceOf check like an idiot
-                if (nascwell.getTarget() == planet);
-                {
+                if (nascwell.getTarget() == planet){
                     //note: it's nothing in this code block that's causing the cast problem
                     log.info("Purging nascent gravity well.");
-                    LocationAPI location = entity.getContainingLocation();
+                    LocationAPI location = nascwell.getContainingLocation();
+
                     log.info("nascent grav well's location is" + location.getLocation());
-                    location.removeEntity(entity);
+                    location.removeEntity(nascwell);
+
+//                    else{
+//                    //note: fuck it let's check again.
+                      //note: okay, so nascwell is indeed in nascwell's location
+//                    List<NascentGravityWellAPI> welllist=location.getGravityWells();
+//                    if(nascwell==welllist.get(0)) {
+//                        log.info("nascent grav well's location is" + location.getLocation());
+//                        location.removeEntity(nascwell);
+//                    }
+//                    else{
+//                        log.info("something is severely fucked up if the location from nascwell isn't nascwell's location");
+//                    }
                     break;
                 }
             }
