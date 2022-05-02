@@ -9,6 +9,7 @@ import com.fs.starfarer.api.impl.campaign.procgen.themes.BaseThemeGenerator;
 import com.fs.starfarer.api.impl.campaign.procgen.themes.MiscellaneousThemeGenerator;
 import com.fs.starfarer.api.impl.campaign.rulecmd.BaseCommandPlugin;
 import com.fs.starfarer.api.util.Misc;
+import org.lazywizard.lazylib.campaign.CampaignUtils;
 import org.apache.log4j.*;
 
 import java.util.List;
@@ -39,13 +40,35 @@ public class nukePlanet_RULECMD extends BaseCommandPlugin {
         //note: print int for good luck
         log.info(42);
         //note: hurray, I can print Vector2 directly
-        log.info(planet.getLocation());
+        LocationAPI planetLoc=planet.getContainingLocation();
+        log.info(planetLoc);
 
         //note: then we get the market
         MarketAPI market = planet.getMarket();
 
         //note: If there is no market, we'll ignore that and proceed straight to nuking.
         //if (market!=null) //note: actually that doesn't work, market is never null, even empty planets have markets.
+
+        //note: todo: remove rings and coronas from planet
+
+        FactionAPI neutral = Global.getSector().getFaction("neutral");
+        final float searchRange =5500f;
+        List<SectorEntityToken> terrainList=CampaignUtils.getNearbyEntitiesFromFaction(planet, searchRange, "terrain", neutral);
+
+            //note: god i fucking hope terrain is neutral, and that people don't fuck with terrain faction identity
+            //note: holy shit it works
+            //note: wait fuck, it wipes magfields but not rings that are in search range
+        for (SectorEntityToken terrain:terrainList)
+        {
+            if(terrain.hasTag("planet")||terrain.hasTag("star")||terrain.hasTag("moon"))
+            {
+                log.info("found a planet, star, or moon that shouldn't be deleted here");
+            }
+            else{
+                log.info("deleting some , hopefully");
+                system.removeEntity(terrain);
+            }
+        }
 
         //note: todo remove nascent gravity well
 
@@ -73,50 +96,52 @@ public class nukePlanet_RULECMD extends BaseCommandPlugin {
 //            system.removeEntity(well);
 //        }
 
-        //note: nerp I have to iterate through every fuckin' entity, doesn't seem to be a more performant way
+       //note: nerp I have to iterate through every fuckin' entity, doesn't seem to be a more performant way
 
-//        List<SectorEntityToken>allEntities=Global.getSector().getHyperspace().getAllEntities();
-//        for (SectorEntityToken entity:allEntities)
+        List<SectorEntityToken>allEntities=Global.getSector().getHyperspace().getAllEntities();
+        for (SectorEntityToken entity:allEntities)
+        {
+            if (entity instanceof NascentGravityWellAPI)
+                log.info("Looking for nascent gravity wells to purge.");
+                //note: isInCurrentLocation doesn't work because the well is in hyper, not realspace
+                NascentGravityWellAPI nascwell= (NascentGravityWellAPI) entity; //note: yeah the cast is not legit
+                if(nascwell.getTarget() == planet);
+                {
+                    //note: it's nothing in this code block that's causing the cast problem
+                    log.info("Purging nascent gravity well.");
+                    LocationAPI location = entity.getContainingLocation();
+                    log.info("nascent grav well's location is" + location.getLocation());
+                    location.removeEntity(entity);
+                    break;
+                }
+        }
+
+        //note: hartley suggested that doing the same loop but through terrain might help
+//
+//        List <CampaignTerrainAPI> listOfNearbyTerrain=system.getTerrainCopy();
+//        for (CampaignTerrainAPI terrain:listOfNearbyTerrain)
 //        {
 //            log.info("Looking for nascent gravity wells to purge.");
 //            //note: isInCurrentLocation doesn't work because the well is in hyper, not realspace
-//            if(entity.getLocationInHyperspace() == planet.getLocationInHyperspace()&&entity instanceof NascentGravityWellAPI);
+//            if(terrain.getLocationInHyperspace() == planet.getLocationInHyperspace()&&terrain instanceof NascentGravityWellAPI);
 //            {
 //                log.info("Purging nascent gravity well.");
-//                LocationAPI location = entity.getContainingLocation();
+//
+//                //note: what if we just teleport this somewhere else and hope it don't matter
+//
+//                terrain.setLocation(-10000,-10000);
+//
+//                //note: shrinking things small doesn't seem to work either
+//                final float tinyRadius =0.1f;
+//                terrain.setRadius(tinyRadius);
+//
+//                LocationAPI location = terrain.getContainingLocation();
 //                log.info("nascent grav well's location is" + location.getLocation());
-//                location.removeEntity(entity);
+//                //note: this doesn't work for whatever reason
+//                location.removeEntity(terrain);
 //                break;
 //            }
 //        }
-
-        //note: hartley suggested that doing the same loop but through terrain might help
-
-        List <CampaignTerrainAPI> terrainList=system.getTerrainCopy();
-        for (CampaignTerrainAPI terrain:terrainList)
-        {
-            log.info("Looking for nascent gravity wells to purge.");
-            //note: isInCurrentLocation doesn't work because the well is in hyper, not realspace
-            if(terrain.getLocationInHyperspace() == planet.getLocationInHyperspace()&&terrain instanceof NascentGravityWellAPI);
-            {
-                log.info("Purging nascent gravity well.");
-
-                //note: what if we just teleport this somewhere else and hope it don't matter
-
-                terrain.setLocation(-10000,-10000);
-                terrain.updateSpec();
-
-                //note: shrinking things small doesn't seem to work either
-//                final float tinyRadius =0.1f;
-//                terrain.setRadius(tinyRadius);
-
-//                LocationAPI location = terrain.getContainingLocation();
-//                log.info("nascent grav well's location is" + location.getLocation());
-                //note: this doesn't work for whatever reason
-                //location.removeEntity(terrain);
-                break;
-            }
-        }
 
 
         //note: I'm hoping that this takes care of all connected stations.
@@ -128,6 +153,8 @@ public class nukePlanet_RULECMD extends BaseCommandPlugin {
             //note: naw, that's unnecessary, force deciv is enough
         }
 
+        //note: okay, what if I try removing all nascent gravity wells and then regenerating all of them except for the one I need to destroy
+
         //note: I guess this is the same as removing connected entities, probably it is the same in the underlying sense.
         //note: nope, it doesn't remove stations.
 //        planet.getContainingLocation().removeEntity(planet);
@@ -137,9 +164,6 @@ public class nukePlanet_RULECMD extends BaseCommandPlugin {
         decivtracker.decivilize(market, true, true);
 
 
-        //note: todo: remove rings and coronas from planet
-
-
         //note: spawn debris around planet
                 //note: In retrospect I could have also used the magicCampaign function for exactly this.
 
@@ -147,7 +171,7 @@ public class nukePlanet_RULECMD extends BaseCommandPlugin {
         BaseThemeGenerator.StarSystemData sysData = MiscGen.computeSystemData(system);
             //note: todo could make debris radius dependent on the kind of target, currently it's a constant.
             //note: todo make debris field rewards dependent on planet. eg. add some volatiles for a gas/cryo planet
-        //MiscGen.addDebrisField(sysData, planet, PLANET_DEBRIS_RADIUS);
+        MiscGen.addDebrisField(sysData, planet, PLANET_DEBRIS_RADIUS);
 
         //note: todo spawn asteroid field around planet
 
@@ -165,8 +189,8 @@ public class nukePlanet_RULECMD extends BaseCommandPlugin {
             return true;
         }
         else{
-
-            return false; //note: wait, does returning false throw an exception anywhere, or
+            log.error("Attempted but failed to delete a planet for some reason!");
+            return false; //note: I should make returning false actually trigger an exception check
         }
 
 
