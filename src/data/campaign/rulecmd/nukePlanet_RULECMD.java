@@ -101,11 +101,11 @@ public class nukePlanet_RULECMD extends BaseCommandPlugin {
         List<SectorEntityToken>allEntities=Global.getSector().getHyperspace().getAllEntities();
         for (SectorEntityToken entity:allEntities)
         {
-            if (entity instanceof NascentGravityWellAPI)
+            if (entity instanceof NascentGravityWellAPI&&entity!=null){
                 log.info("Looking for nascent gravity wells to purge.");
                 //note: isInCurrentLocation doesn't work because the well is in hyper, not realspace
-                NascentGravityWellAPI nascwell= (NascentGravityWellAPI) entity; //note: yeah the cast is not legit
-                if(nascwell.getTarget() == planet);
+                NascentGravityWellAPI nascwell= (NascentGravityWellAPI) entity; //note: the cast works, it just protests in game if you forget to do the instanceOf check like an idiot
+                if (nascwell.getTarget() == planet);
                 {
                     //note: it's nothing in this code block that's causing the cast problem
                     log.info("Purging nascent gravity well.");
@@ -114,6 +114,7 @@ public class nukePlanet_RULECMD extends BaseCommandPlugin {
                     location.removeEntity(entity);
                     break;
                 }
+            }
         }
 
         //note: hartley suggested that doing the same loop but through terrain might help
