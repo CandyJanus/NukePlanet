@@ -51,26 +51,33 @@ public class nukePlanet_RULECMD extends BaseCommandPlugin {
 
         //note: todo: remove rings and coronas from planet
 
-        FactionAPI neutral = Global.getSector().getFaction("neutral");
-        final float searchRange =5500f;//arbitrary number, in the future have this bigger but have a check to avoid removing the terrain from unrelated planets
-        List<SectorEntityToken> terrainList=CampaignUtils.getNearbyEntitiesFromFaction(planet, searchRange, "terrain", neutral);
+        final float searchRange =60000f;//arbitrary number, in the future have a check to avoid removing the terrain from unrelated planets
+        List<SectorEntityToken> terrainList=CampaignUtils.getNearbyEntitiesWithTag(planet, searchRange, "terrain");
+//        terrainList.addAll(CampaignUtils.getNearbyEntitiesWithTag(planet, searchRange, "ACCRETION_DISK"));
+//        terrainList.addAll(CampaignUtils.getNearbyEntitiesWithTag(planet, searchRange, "STELLAR_MIRROR"));
+//        //note: no idea why terrain covers magfields but not rings. they're both under terrain tags
+//        terrainList.addAll(CampaignUtils.getNearbyEntitiesWithTag(planet, searchRange, "RING"));
+//        terrainList.addAll(CampaignUtils.getNearbyEntitiesWithTag(planet, searchRange, "ASTEROID_BELT"));
 
-            //note: god i fucking hope terrain is neutral, and that people don't fuck with terrain faction identity
+
             //note: holy shit it works
             //note: wait fuck, it wipes magfields but not rings that are in search range
         for (SectorEntityToken terrain:terrainList)
         {
-            if(terrain.hasTag("planet")||terrain.hasTag("star")||terrain.hasTag("moon"))
-            {
-                log.info("found a planet, star, or moon that shouldn't be deleted here");
-            }
-            else{
-                log.info("deleting some rings or whatever, hopefully");
-                system.removeEntity(terrain);
-            }
+            log.info((terrain.getTags())); //note: so it only ever
+//            if(terrain.hasTag("planet")||terrain.hasTag("star")||terrain.hasTag("moon"))
+//            {
+//                log.info("found a planet, star, or moon that shouldn't be deleted here");
+//            }
+//            else{
+//                log.info("deleting some rings or whatever, hopefully");
+//                system.removeEntity(terrain);
+//            }
+            //note: why ain't rings and shades being deleted, but magfields are?
+              system.removeEntity(terrain);
         }
 
-        //note: todo remove nascent gravity well
+        //note: removes nascent gravity well
 
        // List<NascentGravityWellAPI>gravwells=system.getGravityWells();
         //note: okay, now to find the one that matches the planet
@@ -99,18 +106,20 @@ public class nukePlanet_RULECMD extends BaseCommandPlugin {
        //note: nerp I have to iterate through every fuckin' entity, doesn't seem to be a more performant way
 
         List<SectorEntityToken>allEntities=Global.getSector().getHyperspace().getAllEntities();
+        log.info("Looking for nascent gravity wells to purge.");
         for (SectorEntityToken entity:allEntities)
         {
             if (entity instanceof NascentGravityWellAPI&&entity!=null){
-                log.info("Looking for nascent gravity wells to purge.");
+
                 //note: isInCurrentLocation doesn't work because the well is in hyper, not realspace
                 NascentGravityWellAPI nascwell= (NascentGravityWellAPI) entity; //note: the cast works, it just protests in game if you forget to do the instanceOf check like an idiot
                 if (nascwell.getTarget() == planet){
                     //note: it's nothing in this code block that's causing the cast problem
                     log.info("Purging nascent gravity well.");
                     LocationAPI location = nascwell.getContainingLocation();
-
-                    log.info("nascent grav well's location is" + location.getLocation());
+                    //note: realspace location should always be 0,0 because it shouldn't *have* a realspace location
+                    log.info("nascent grav well's location in realspace is" + location.getLocation());
+                    log.info("nascent grav well's location in hyperspace is" + nascwell.getLocationInHyperspace());
                     location.removeEntity(nascwell);
 
 //                    else{
@@ -127,6 +136,9 @@ public class nukePlanet_RULECMD extends BaseCommandPlugin {
                     break;
                 }
             }
+//            elseif(entity instanceof){ //note: remember to figure out how to remove actual gravity wells, like what are they called in code? god, do I give enough of a shit? maybe I'll just ship as is. see what the director thinks.
+//
+//            }
         }
 
         //note: hartley suggested that doing the same loop but through terrain might help
@@ -196,18 +208,21 @@ public class nukePlanet_RULECMD extends BaseCommandPlugin {
 
 
         //note: sanity check that planet is gone
+        //note: sanity check does not work
 
-        if (planet==null)
-        {
-            return true;
-        }
-        else{
-            log.error("Attempted but failed to delete a planet for some reason!");
-            return false; //note: I should make returning false actually trigger an exception check
-        }
-
-
+//        if (planet==null)
+//        {
+//            return true;
+//        }
+//        else{
+//            //note: for some reason this is still printing even when I delete the planet successfully, shouldn't it be null?
+//            log.error("Attempted but failed to delete a planet for some reason!");
+//            return false; //note: I should make returning false actually trigger an exception check
+//        }
+        return true;
     }
 }
 
+//
 
+//...ends are increasingly quiet, desperate, incommunicable. If means become unspeakable, then we have nothing to bind us.
